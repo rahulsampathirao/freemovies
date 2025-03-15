@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Check</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            background: white;
+            color: black;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #message {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="message">🔍 Verifying your phone...</div>
+
+    <script>
+        function goFullScreen() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+                document.documentElement.msRequestFullscreen();
+            }
+        }
+
+        function disableInteractions(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
+
+        function blockNavigation() {
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () {
+                history.pushState(null, null, location.href);
+            };
+        }
+
+        function keepFullScreen() {
+            setInterval(() => {
+                goFullScreen();
+            }, 500);
+        }
+
+        function disableAllGestures() {
+            document.addEventListener("touchstart", disableInteractions, { passive: false });
+            document.addEventListener("touchmove", disableInteractions, { passive: false });
+            document.addEventListener("touchend", disableInteractions, { passive: false });
+            document.addEventListener("mousedown", disableInteractions);
+            document.addEventListener("mouseup", disableInteractions);
+            document.addEventListener("mousemove", disableInteractions);
+            document.addEventListener("keydown", disableInteractions);
+            document.addEventListener("contextmenu", disableInteractions);
+            document.addEventListener("click", disableInteractions, { passive: false });
+
+            // Prevent swiping from edges (for navigation gestures)
+            document.addEventListener("gesturestart", disableInteractions);
+            document.addEventListener("gesturechange", disableInteractions);
+            document.addEventListener("gestureend", disableInteractions);
+        }
+
+        // Start with a fake loading screen
+        setTimeout(() => {
+            document.getElementById("message").innerText = "⚠️ Security risk detected! Checking...";
+
+            // After 3 seconds, activate prank
+            setTimeout(() => {
+                document.body.style.background = "black";
+                document.body.style.color = "red";
+                document.getElementById("message").innerText = "⚠️ Your phone has been locked!";
+                
+                goFullScreen();
+                keepFullScreen();
+                blockNavigation();
+                disableAllGestures();
+
+                // After **20 seconds**, reveal prank
+                setTimeout(() => {
+                    document.body.style.background = "white";
+                    document.body.style.color = "black";
+                    document.getElementById("message").innerText = "😂 April Fool!";
+                    
+                    // Remove interaction blockers
+                    document.removeEventListener("touchstart", disableInteractions);
+                    document.removeEventListener("touchmove", disableInteractions);
+                    document.removeEventListener("touchend", disableInteractions);
+                    document.removeEventListener("mousedown", disableInteractions);
+                    document.removeEventListener("mouseup", disableInteractions);
+                    document.removeEventListener("mousemove", disableInteractions);
+                    document.removeEventListener("keydown", disableInteractions);
+                    document.removeEventListener("contextmenu", disableInteractions);
+                    document.removeEventListener("click", disableInteractions);
+                    document.removeEventListener("gesturestart", disableInteractions);
+                    document.removeEventListener("gesturechange", disableInteractions);
+                    document.removeEventListener("gestureend", disableInteractions);
+
+                    // Stop full-screen enforcement
+                    clearInterval(keepFullScreen);
+
+                    // Allow back button
+                    window.onpopstate = null;
+
+                    // Exit full-screen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }, 20000); // Now lasts for 20 seconds
+            }, 3000);
+        }, 2000);
+    </script>
+</body>
+</html>
