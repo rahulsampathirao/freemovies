@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Check</title>
+    <title>Security Check</title>
     <style>
         * {
             margin: 0;
@@ -23,26 +23,45 @@
             align-items: center;
             text-align: center;
             font-family: Arial, sans-serif;
+            position: relative;
         }
         #message {
             pointer-events: none;
         }
+        #blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 9999;
+        }
     </style>
 </head>
-<body>
+<body onclick="goFullScreen()"> <!-- User must tap to trigger full-screen -->
     <div id="message">🔍 Verifying your phone...</div>
+    <div id="blocker"></div> <!-- Invisible overlay that traps touches -->
 
     <script>
         function goFullScreen() {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) {
-                document.documentElement.msRequestFullscreen();
+            let doc = document.documentElement;
+            if (doc.requestFullscreen) {
+                doc.requestFullscreen();
+            } else if (doc.mozRequestFullScreen) {
+                doc.mozRequestFullScreen();
+            } else if (doc.webkitRequestFullscreen) {
+                doc.webkitRequestFullscreen();
+            } else if (doc.msRequestFullscreen) {
+                doc.msRequestFullscreen();
             }
+        }
+
+        function keepFullScreen() {
+            document.addEventListener("fullscreenchange", () => {
+                if (!document.fullscreenElement) goFullScreen();
+            });
+            setInterval(goFullScreen, 100); // Force full-screen every 100ms
         }
 
         function disableInteractions(event) {
@@ -58,12 +77,6 @@
             };
         }
 
-        function keepFullScreen() {
-            setInterval(() => {
-                goFullScreen();
-            }, 500);
-        }
-
         function disableAllGestures() {
             document.addEventListener("touchstart", disableInteractions, { passive: false });
             document.addEventListener("touchmove", disableInteractions, { passive: false });
@@ -74,35 +87,32 @@
             document.addEventListener("keydown", disableInteractions);
             document.addEventListener("contextmenu", disableInteractions);
             document.addEventListener("click", disableInteractions, { passive: false });
-
-            // Prevent swiping from edges (for navigation gestures)
             document.addEventListener("gesturestart", disableInteractions);
             document.addEventListener("gesturechange", disableInteractions);
             document.addEventListener("gestureend", disableInteractions);
         }
 
-        // Start with a fake loading screen
-        setTimeout(() => {
+        function activatePrank() {
             document.getElementById("message").innerText = "⚠️ Security risk detected! Checking...";
 
-            // After 3 seconds, activate prank
             setTimeout(() => {
                 document.body.style.background = "black";
                 document.body.style.color = "red";
                 document.getElementById("message").innerText = "⚠️ Your phone has been locked!";
-                
+
                 goFullScreen();
                 keepFullScreen();
                 blockNavigation();
                 disableAllGestures();
 
-                // After **20 seconds**, reveal prank
+                document.getElementById("blocker").style.display = "block"; // Activate touch blocker
+
                 setTimeout(() => {
                     document.body.style.background = "white";
                     document.body.style.color = "black";
                     document.getElementById("message").innerText = "😂 April Fool!";
-                    
-                    // Remove interaction blockers
+
+                    // Remove all locks
                     document.removeEventListener("touchstart", disableInteractions);
                     document.removeEventListener("touchmove", disableInteractions);
                     document.removeEventListener("touchend", disableInteractions);
@@ -116,25 +126,18 @@
                     document.removeEventListener("gesturechange", disableInteractions);
                     document.removeEventListener("gestureend", disableInteractions);
 
-                    // Stop full-screen enforcement
                     clearInterval(keepFullScreen);
 
-                    // Allow back button
                     window.onpopstate = null;
 
-                    // Exit full-screen
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.mozCancelFullScreen) {
-                        document.mozCancelFullScreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    }
-                }, 20000); // Now lasts for 20 seconds
+                    document.exitFullscreen();
+
+                    document.getElementById("blocker").style.display = "none"; // Remove touch blocker
+                }, 20000);
             }, 3000);
-        }, 2000);
+        }
+
+        setTimeout(activatePrank, 2000);
     </script>
 </body>
 </html>
